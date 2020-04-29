@@ -1,0 +1,61 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
+
+android {
+    compileSdkVersion rootProject.ext.android.compileSdkVersion
+    buildToolsVersion rootProject.ext.android.buildToolsVersion
+
+    defaultConfig {
+        minSdkVersion rootProject.ext.android.minSdkVersion
+        targetSdkVersion rootProject.ext.android.targetSdkVersion
+        versionCode rootProject.ext.android.versionCode
+        versionName rootProject.ext.android.versionName
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles 'consumer-rules.pro'
+
+//        compileOptions {
+//            sourceCompatibility JavaVersion.VERSION_1_8
+//            targetCompatibility JavaVersion.VERSION_1_8
+//        }
+    }
+
+    kapt {
+        arguments { arg("moduleName", project.getName()) }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+}
+
+
+
+dependencies {
+
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    def depends = rootProject.ext.dependencies
+    implementation depends.appcompat
+    implementation depends.core_ktx
+    testImplementation depends.junit
+    androidTestImplementation depends.test_ext
+    androidTestImplementation depends.espresso_core
+
+    //第三方依赖
+//    implementation depends.butterknife
+//    kapt depends.butterknife_compiler
+//    implementation depends.recyclerview_v7
+//    implementation depends.smartrefresh
+    //阿里的ARouter网上资料描述只宿主添加arouter_api和arouter_compiler依赖，也有成功的demo，但是本项目需要宿主和module都加依赖
+    implementation depends.arouter_api
+    kapt depends.arouter_compiler
+//    implementation  rootProject.ext.dependencies["anko-commons"] //原生工具包
+
+}

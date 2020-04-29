@@ -1,0 +1,123 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
+
+
+android {
+    compileSdkVersion rootProject.ext.android.compileSdkVersion
+    buildToolsVersion rootProject.ext.android.buildToolsVersion
+
+    defaultConfig {
+        applicationId rootProject.ext.android.applicationIdApp
+        minSdkVersion rootProject.ext.android.minSdkVersion
+        targetSdkVersion rootProject.ext.android.targetSdkVersion
+        versionCode rootProject.ext.android.versionCode
+        versionName rootProject.ext.android.versionName
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+    }
+
+
+    //  APK签名 https://www.jianshu.com/p/a1f8e5896aa2
+    signingConfigs {
+        // 路劲/app/gradle.properties 文件内配置秘钥信息
+        release { //正式环境
+            storeFile file(StoreFile)
+            storePassword StorePassword
+            keyAlias KeyAlias
+            keyPassword KeyPassword
+        }
+        debug {   //测试环境
+            storeFile file(StoreFile)
+            storePassword StorePassword
+            keyAlias KeyAlias
+            keyPassword KeyPassword
+        }
+    }
+
+
+    /**  代码混淆 + 打包配置  */
+    buildTypes {
+
+        release { //正式环境
+            minifyEnabled true   // 代码混淆  https://blog.csdn.net/youyu_torch/article/details/78775100
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            shrinkResources true // 移除无用的资源文件
+            zipAlignEnabled true // ZipAlign优化 https://blog.csdn.net/hello_1995/article/details/52870573
+            signingConfig signingConfigs.release  // 正式环境签名
+            buildConfigField "String", "BUGLY_ID", "\"请自行替换 Bugly 上面的 AppID\""  // Bug管理工具之Bugly的使用 服务端替换BuglyId
+        }
+        debug {  //测试环境
+            shrinkResources false
+            zipAlignEnabled false
+            minifyEnabled false
+            signingConfig signingConfigs.debug
+            buildConfigField "String", "BUGLY_ID", "\"请自行替换 Bugly 上面的 AppID\""
+        }
+    }
+
+
+    /**  生成APK，执行配置,在Build Variants视窗内切换渠道 */
+    //实现友盟多渠道打包 https://www.jb51.net/article/140427.htm
+    flavorDimensions "default"  // 设置默认渠道名，同时可以切换成下面的渠道，生成的APK路径：/build/outputs/apk/..
+    productFlavors {            // 友盟多渠道打包
+        tencent {}  // 应用宝
+        baidu {}    // 百度
+        xiaomi {}   // 小米
+        huawei {}   // 华为
+        oppo {}
+        vivo {}
+        _360 {}
+        Beta {}     //测试版
+        Alpha {}    //首发（第一版）
+        Develop {}  //开发版
+        Demo {}     //演示版 __ 括号内提取 manifestPlaceholders = [UMENG_CHANNEL_VALUE: "Develop"]
+
+        productFlavors.all { flavor ->
+            flavor.manifestPlaceholders = [UMENG_CHANNEL_VALUE: name]
+        }
+
+        // apk名配置
+        applicationVariants.all { variant ->
+            variant.outputs.all { output ->
+                def appName = "KotlinDemo"
+                if (variant.buildType.name == 'debug') {
+                    outputFileName = appName + '_v' + versionName + '_' + variant.buildType.name + '.apk'
+                } else {
+                    outputFileName = appName + '_v' + versionName + '_' + new Date().format("yyyyMMdd") + '_' + variant.productFlavors[0].name + '_' + variant.buildType.name + '.apk'
+                }
+            }
+        }
+
+    }
+}
+
+
+kapt {
+    arguments { arg("moduleName", project.getName()) }
+}
+
+
+dependencies {
+    //引用module
+    implementation project(':module_base')
+    implementation project(':module_recycler')
+
+
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    def depends = rootProject.ext.dependencies
+    implementation depends.appcompat
+    implementation depends.core_ktx
+    testImplementation depends.junit
+    androidTestImplementation depends.test_ext
+    androidTestImplementation depends.espresso_core
+    implementation depends.constraintlayout
+
+    //第三方依赖
+    implementation depends.arouter_api
+    kapt depends.arouter_compiler
+
+}
