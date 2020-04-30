@@ -1,7 +1,7 @@
 package com.example.recycler.view
 
 import android.os.Bundle
-import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.alibaba.android.arouter.facade.annotation.Route
 import com.example.recycler.R
@@ -12,6 +12,7 @@ class RecyclerActivity:AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_recycle)
-        Log.i("RecyclerActivity","onCreate --2- ")
+
+        Toast.makeText(this, "onCreate RecyclerActivity", Toast.LENGTH_SHORT).show()
     }
 }
